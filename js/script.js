@@ -21,41 +21,82 @@ var model = {
 	addTask : function(dateObj, task) {
 		var formatted = controller.formatDate(dateObj);
 		model.addDate(formatted);
-		if (this.dates[formatted].tasks === undefined) {
-			this.dates[formatted].tasks = [];
-		}
-		this.dates[formatted].tasks.push([controller.timestamp(), task]);
+		this.dates[formatted].tasks.push([task, controller.timestamp()]);
 	},
 
 	addEvent : function(dateObj, event) {
 		var formatted = controller.formatDate(dateObj);
 		model.addDate(formatted);
-		if (this.dates[formatted].events === undefined) {
-			this.dates[formatted].events = [];
-		}
-		this.dates[formatted].events.push([controller.timestamp(), event]);
+		this.dates[formatted].events.push([event, controller.timestamp()]);
 	},
 
 	addNote : function(dateObj, note) {
 		var formatted = controller.formatDate(dateObj);
 		model.addDate(formatted);
-		if (this.dates[formatted].notes === undefined) {
-			this.dates[formatted].notes = [];
-		}
-		this.dates[formatted].tasks.push([controller.timestamp(), note]);
+		this.dates[formatted].tasks.push([note, controller.timestamp()]);
 	}
 };
 
 var view = {
 
 	init : function () {
-		
+
+		view.renderGrid();
+		view.displayMonth(controller.today());
 	},
 
-	displayMonth : function () {},
+	firstDay : function (dateObj) {
+		var month = dateObj.getMonth();
+		var year = dateObj.getFullYear();
+		var firstDay = new Date(year, month, 1);
+		return firstDay.getDay();
+	},
+
+	monthHeadings : function() {
+		var i = -7;
+		var incr = 0;
+		while (i < 0) {
+			$('.col'+i).text(controller.dayOfWeek(incr));
+			incr = incr + 1;
+			i = i + 1;
+		}
+	},
+
+	displayMonth : function (dateObj) {
+		var start = view.firstDay(dateObj);
+		var numDays = controller.numberOfDays(dateObj);
+		view.monthHeadings();
+		var i = 0;
+
+		while (i < numDays) {
+			var keepUp = start + i;
+			$('.col'+keepUp).text(keepUp+'th');
+			i = i + 1;
+		}
+
+	},
+
+	renderGrid : function () {
+		var rows = 6;
+		var cols = 7;
+
+		var i = 1;
+		var j = 1;
+		var k = -7;
+		
+		while (i <= rows) {
+			$('.month').append('<div class="row" id="row'+i+'"></div>');
+			while (j <= cols) {
+				$("#row"+i).append('<div class="col col'+k+'"></div>');
+				j = j + 1;
+				k = k + 1;
+			};
+			j = 1;
+			i = i + 1;
+		};
+	},
 
 	displayDay : function () {},
-
 	displayTasks : function () {},
 	displayEvents : function () {},
 	displayNotes : function () {},
@@ -65,6 +106,7 @@ var controller = {
 
 	init : function() {
 		model.init();
+		view.init();
 	},
 
 	formatDate : function (dateObj) {
@@ -79,6 +121,12 @@ var controller = {
 		return today;
 	},
 
+	createDay : function(year, month, day) {
+		var day = new Day (year, month, day);
+		model.addDate(day);
+		return day;
+	},
+
 	timestamp : function(){
 		return Date.now();
 	},
@@ -86,6 +134,17 @@ var controller = {
 	month : function(dateObj) {
 		var monthNames = ["January", "February", "March", "April", "May", "June","July", "August", "September", "October", "November", "December"];
 		return monthNames[dateObj.getMonth()];
+	},
+
+	dayOfWeek : function (dateObj) {
+		var day = 0;
+		if (typeof dateObj === "object") {
+			day = dateObj.getDay();
+		} else {
+			day = dateObj;
+		}
+		var days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+		return days[day];
 	},
 
 	numberOfDays : function(dateObj) {
@@ -126,8 +185,4 @@ var controller = {
 };
 
 
-model.init();
-
-
-
-
+controller.init();

@@ -1,0 +1,10 @@
+.row {
+	width: 100%;
+	clear: both;
+}
+
+.col {
+	float: left;
+	height: 15%;
+	width: 12%;
+}
