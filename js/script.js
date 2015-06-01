@@ -40,9 +40,11 @@ var model = {
 var view = {
 
 	init : function () {
-
+		var date = new Date(2016, 6, 1);
 		view.renderGrid();
-		view.displayMonth(controller.today());
+		//view.displayMonth(controller.today());
+		view.displayMonth(date);
+		alert(controller.numberOfDays(date));
 	},
 
 	firstDay : function (dateObj) {
@@ -66,18 +68,18 @@ var view = {
 		var start = view.firstDay(dateObj);
 		var numDays = controller.numberOfDays(dateObj);
 		view.monthHeadings();
+		
 		var i = 0;
 
 		while (i < numDays) {
-			var keepUp = start + i;
-			$('.col'+keepUp).text(keepUp+'th');
+			$('.col'+(start+i)).text((i+1)+'th');
 			i = i + 1;
 		}
 
 	},
 
 	renderGrid : function () {
-		var rows = 6;
+		var rows = 7;
 		var cols = 7;
 
 		var i = 1;
