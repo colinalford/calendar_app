@@ -2,12 +2,15 @@
 
 var model = {
 
+	//initializes date object for storing dates and 
 	dates : {},
 
+	//adds the current date as of page load to the dates object
 	init: function () {
 		model.addDate(controller.today());
 	},
 
+	// adds a date to the dates object
 	addDate: function (dateObj) {
 		var formatted = controller.formatDate(dateObj);
 		if(this.dates[formatted] === undefined) {
@@ -18,18 +21,21 @@ var model = {
 		this.dates[formatted].notes = [];
 	},
 
+	// adds a task to the dates object by date
 	addTask : function(dateObj, task) {
 		var formatted = controller.formatDate(dateObj);
 		model.addDate(formatted);
 		this.dates[formatted].tasks.push([task, controller.timestamp()]);
 	},
 
+	// adds an event to the dates object by date
 	addEvent : function(dateObj, event) {
 		var formatted = controller.formatDate(dateObj);
 		model.addDate(formatted);
 		this.dates[formatted].events.push([event, controller.timestamp()]);
 	},
 
+	// adds a note to the dates object by date
 	addNote : function(dateObj, note) {
 		var formatted = controller.formatDate(dateObj);
 		model.addDate(formatted);
@@ -37,24 +43,24 @@ var model = {
 	}
 };
 
+
+// View
 var view = {
 
+	// On page load, loads the grid and populates it with calendar information and any events associated with dates already in the dates object
 	init : function () {
-		var date = new Date(2016, 6, 1);
 		view.renderGrid();
-		//view.displayMonth(controller.today());
-		view.displayMonth(date);
-		alert(controller.numberOfDays(date));
+		view.displayMonth(controller.today());
+		view.changeMonth();
 	},
 
-	firstDay : function (dateObj) {
-		var month = dateObj.getMonth();
-		var year = dateObj.getFullYear();
-		var firstDay = new Date(year, month, 1);
-		return firstDay.getDay();
+	// Renders the month name, year, and previous and next month buttons above the calendar grid
+	displayMonthHeading : function (dateObj) {
+		$('#month-name').text(controller.month(dateObj)+' '+dateObj.getFullYear());
 	},
 
-	monthHeadings : function() {
+	// Adds the name of each day across the top of the calendar
+	weekHeadings : function() {
 		var i = -7;
 		var incr = 0;
 		while (i < 0) {
@@ -64,13 +70,35 @@ var view = {
 		}
 	},
 
-	displayMonth : function (dateObj) {
-		var start = view.firstDay(dateObj);
-		var numDays = controller.numberOfDays(dateObj);
-		view.monthHeadings();
+	changeMonth : function () {
 		
-		var i = 0;
 
+		$('#prev').click(function(){
+			var month = controller.current.getMonth();
+			controller.current.setMonth(controller.current.getMonth() - 1);
+			view.displayMonth(controller.current);
+			
+		});
+
+		$('#next').click(function(){
+			var month = controller.current.getMonth();
+			controller.current.setMonth(controller.current.getMonth() + 1);
+			view.displayMonth(controller.current);
+		});
+	},
+
+	// Displays date information unique to the given month within the calendar grid
+	displayMonth : function (dateObj) {
+
+		view.clearGrid();
+
+		var start = controller.firstDay(dateObj);
+		var numDays = controller.numberOfDays(dateObj);
+
+		view.weekHeadings();
+		view.displayMonthHeading(dateObj);
+
+		var i = 0;
 		while (i < numDays) {
 			$('.col'+(start+i)).text((i+1)+'th');
 			i = i + 1;
@@ -78,6 +106,7 @@ var view = {
 
 	},
 
+	// Creates a grid for the calendar
 	renderGrid : function () {
 		var rows = 7;
 		var cols = 7;
@@ -98,19 +127,26 @@ var view = {
 		};
 	},
 
-	displayDay : function () {},
-	displayTasks : function () {},
-	displayEvents : function () {},
-	displayNotes : function () {},
+	clearGrid : function () {
+		var cols = 41;
+		var i = 0;
+		while (i <= cols){
+			$('.col'+i).text(' ');
+			i = i + 1;
+		}
+	}
 };
 
 var controller = {
 
+	// Initializes the model and views on page load
 	init : function() {
 		model.init();
+		controller.current = controller.today();
 		view.init();
 	},
 
+	// Formats the date as a string from a date object for easy store in the dates object as a key. Formats as "YEAR-MONTH-DAY", e.g., "2014-3-13";
 	formatDate : function (dateObj) {
 		var day = dateObj.getDate().toString();
 		var month = (dateObj.getMonth()+1).toString();
@@ -118,26 +154,31 @@ var controller = {
 		return year + "-" + month + "-" + day;
 	},
 
+	// Creates a date object for the current date
 	today : function () {
 		var today = new Date();
 		return today;
 	},
 
+	// Creates a date object for any given day
 	createDay : function(year, month, day) {
 		var day = new Day (year, month, day);
 		model.addDate(day);
 		return day;
 	},
 
+	// Creaes a timestamp for the time when it is invoked
 	timestamp : function(){
 		return Date.now();
 	},
 
+	// Returns the name of a month from a date object
 	month : function(dateObj) {
 		var monthNames = ["January", "February", "March", "April", "May", "June","July", "August", "September", "October", "November", "December"];
 		return monthNames[dateObj.getMonth()];
 	},
 
+	// Returns the name of the day of the week from a date object or integer from 0-6
 	dayOfWeek : function (dateObj) {
 		var day = 0;
 		if (typeof dateObj === "object") {
@@ -145,10 +186,11 @@ var controller = {
 		} else {
 			day = dateObj;
 		}
-		var days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+		var days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 		return days[day];
 	},
 
+	// Returns the number of days in a month from a date object
 	numberOfDays : function(dateObj) {
 		var thirtyOne = [0,2,4,6,7,9,11];
 		var thirty = [3,5,8,10];
@@ -164,6 +206,7 @@ var controller = {
 		}
 	},
 
+	// Returns true if the year from a date object is a leap year
 	isLeapYear : function(dateObj) {
 		var year = dateObj.getFullYear();
 		if (((year % 4 == 0) && (year % 100 != 0)) || (year % 400 == 0)){
@@ -173,18 +216,34 @@ var controller = {
 		}
 	},
 
+	// return the first day of the month from a date object that is passed in
+	firstDay : function (dateObj) {
+		var month = dateObj.getMonth();
+		var year = dateObj.getFullYear();
+		var firstDay = new Date(year, month, 1);
+		return firstDay.getDay();
+	},
+
+	// returns an array of tasks from the date passed in
 	getTasks : function (date) {
-		return model.dates[date].tasks;
+		var tasks = model.dates[date].tasks;
+		return tasks;
 	},
 
+	// returns an array of events from the date passed in
 	getEvents : function(date) {
-		return model.dates[date].events;
+		var events = model.dates[date].events;
+		return events;
 	},
 
+	// returns an array of notes from the date passed in
 	getNotes : function(date) {
-		return model.dates[date].events;
+		var notes = model.dates[date].events;
+		return notes;
 	}
 };
+
+controller.current = new Date();
 
 
 controller.init();
