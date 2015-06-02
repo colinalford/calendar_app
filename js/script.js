@@ -50,7 +50,8 @@ var view = {
 	// On page load, loads the grid and populates it with calendar information and any events associated with dates already in the dates object
 	init : function () {
 		view.renderGrid();
-		view.displayMonth(controller.today());
+		view.displayMonth(controller.current);
+		view.displayDay();
 		view.changeMonth();
 	},
 
@@ -100,7 +101,7 @@ var view = {
 
 		var i = 0;
 		while (i < numDays) {
-			$('.col'+(start+i)).text((i+1)+'th');
+			$('.col'+(start+i)).text((i+1));
 			i = i + 1;
 		}
 
@@ -134,6 +135,29 @@ var view = {
 			$('.col'+i).text(' ');
 			i = i + 1;
 		}
+	},
+
+	displayDay : function(){
+		var button = '<button type="button" onclick="%data%">%contents%</button>';
+		var taskButton = button.replace('%data%', 'view.addTask()').replace('%contents%', 'Add Task');
+		var eventButton = button.replace('%data%', 'view.addEvent()').replace('%contents%', 'Add Event');
+		var noteButton = button.replace('%data%', 'view.addNote()').replace('%contents%', 'Add Note');
+
+		$('.day').prepend(taskButton);
+		$('.day').prepend(eventButton);
+		$('.day').prepend(noteButton);
+	},
+
+	addTask : function () {
+
+		$('#form-area').append('<form><input type="text" name="task"></form>');
+	},
+
+	addEvent : function(){
+		$('#form-area').append('<form><input type="text" name="event"></form>');
+	},
+	addNote : function(){
+		$('#form-area').append('<form><input type="text" name="task"></form>');
 	}
 };
 
