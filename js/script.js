@@ -15,30 +15,31 @@ var model = {
 		var formatted = controller.formatDate(dateObj);
 		if(this.dates[formatted] === undefined) {
 			this.dates[formatted] = {};
+			this.dates[formatted].tasks = [];
+			this.dates[formatted].events = [];
+			this.dates[formatted].notes = [];
 		}
-		this.dates[formatted].tasks = [];
-		this.dates[formatted].events = [];
-		this.dates[formatted].notes = [];
 	},
 
 	// adds a task to the dates object by date
 	addTask : function(dateObj, task) {
 		var formatted = controller.formatDate(dateObj);
-		model.addDate(formatted);
-		this.dates[formatted].tasks.push([task, controller.timestamp()]);
+		model.addDate(dateObj);
+		var arr = [task, controller.timestamp()];
+		this.dates[formatted].tasks.push(arr);
 	},
 
 	// adds an event to the dates object by date
 	addEvent : function(dateObj, event) {
 		var formatted = controller.formatDate(dateObj);
-		model.addDate(formatted);
+		model.addDate(dateObj);
 		this.dates[formatted].events.push([event, controller.timestamp()]);
 	},
 
 	// adds a note to the dates object by date
 	addNote : function(dateObj, note) {
 		var formatted = controller.formatDate(dateObj);
-		model.addDate(formatted);
+		model.addDate(dateObj);
 		this.dates[formatted].tasks.push([note, controller.timestamp()]);
 	}
 };
@@ -149,15 +150,18 @@ var view = {
 	},
 
 	addTask : function () {
-
-		$('#form-area').append('<form><input type="text" name="task"></form>');
+		$('#form-area').append('<form id="task"><input name="task" id="task-input"><input type="button" id="task-submit"/></form>');
+		$('#task-submit').click(function(){
+			model.addTask(controller.current, $('#task-input').val());
+			alert(model.dates.toSource());
+		});
 	},
 
 	addEvent : function(){
-		$('#form-area').append('<form><input type="text" name="event"></form>');
+		$('#form-area').append('<form id="event"><input type="text" name="event" id="event-input"></form>');
 	},
 	addNote : function(){
-		$('#form-area').append('<form><input type="text" name="task"></form>');
+		$('#form-area').append('<form id="note"><input type="text" name="task" id="note-input"></form>');
 	}
 };
 
@@ -249,8 +253,9 @@ var controller = {
 	},
 
 	// returns an array of tasks from the date passed in
-	getTasks : function (date) {
-		var tasks = model.dates[date].tasks;
+	getTasks : function (dateObj) {
+		var formatted = controller.formatDate(dateObj);
+		var tasks = model.dates[formatted].tasks;
 		return tasks;
 	},
 
@@ -264,7 +269,19 @@ var controller = {
 	getNotes : function(date) {
 		var notes = model.dates[date].events;
 		return notes;
-	}
+	},
+
+	addNote : function(dateObj, note) {
+		model.addNote(dateObj, note);
+	},
+
+	addTask : function(dateObj, task) {
+		model.addTask(dateObj, task);
+	},
+
+	addEvent : function(dateObj, event) {
+		model.addEvent(dateObj, event);
+	},
 };
 
 controller.current = new Date();
